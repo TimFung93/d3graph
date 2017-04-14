@@ -22,8 +22,8 @@ const animateDelay = 30;
 
 const parseYear = d3.timeParse("%Y")
 
-const x = d3.scaleBand().rangeRound([0, width], .1,.3);
 const y = d3.scaleLinear().range([height, 0]);
+const x = d3.scaleBand().rangeRound([0, width], .1,.3);
 
 
 const tooltip = d3.select('body').append('div')
@@ -33,7 +33,6 @@ const tooltip = d3.select('body').append('div')
 		.style('border', '1px #333 solid')
 		.style('border-radius', '5px')
 		.style('opacity', '0')
-
 
 
 
@@ -55,13 +54,23 @@ d3.csv('./../data/GDP.csv', function(data) {
 	});
 
 	x.domain(data.map(function(d) { return d.date; }));
-
-	const xAxis = d3.axisBottom(x)
-	.tickValues(x.domain().filter(function(d, i) {
-		return i;
-	}));
-
 	y.domain([0, d3.max(data, function(d) {return d.gdp; })]);
+
+	const minDate = new Date(data[0].date);
+  	const maxDate = new Date(data[data.length - 1].date);
+
+
+	const xAxisScale = d3.scaleTime()
+    .domain([minDate, maxDate])
+    .range([0, width]);
+
+     var xAxis = d3.axisBottom(xAxisScale)
+    .tickFormat(d3.timeFormat("%Y"))
+    .ticks(16);
+
+	
+
+	
 
 	svg.append('g')
 		.attr('class', 'x axis')
@@ -69,8 +78,8 @@ d3.csv('./../data/GDP.csv', function(data) {
 		.call(xAxis)
 	.selectAll('text')
 		.attr('y', '0')
-		.attr('x', '9')
-		.attr('dy', '0.35em')
+		.attr('x', '-27')
+		.attr('dy', '1.20em')
 		.style('text-anchor' , 'start');
 
 	svg.append('g')
@@ -82,6 +91,8 @@ d3.csv('./../data/GDP.csv', function(data) {
 		.attr('dy', '0.78em')
 		.style('text', 'end')
 		.text('Value ($)');
+
+	
 
 	const myGraph = svg.selectAll('bar')
 		.data(data)
@@ -95,7 +106,7 @@ d3.csv('./../data/GDP.csv', function(data) {
 			tooltip.transition()
 				.style('opacity', 1)
 			tooltip.html(d.date +                      
-				"<br/>"  + d.gdp)	 
+				"<br/>"  + d.gdp + "(in Millions)")	 
 				.style('left', (d3.event.pageX) + 'px')
 				.style('top', (d3.event.pageY - 28) + 'px')
 			d3.select(this).style('opacity', 0.5)
